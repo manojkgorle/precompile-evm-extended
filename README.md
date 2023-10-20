@@ -105,7 +105,7 @@ map[msg.sender] = 56;
 uint256 value = map[msg.sender]
 ```
 
- Gas Savings
+- Gas Savings
 ```Soldity
     function testCustom(address _owner) public{ //test
         map.mapAddUint("1", _owner, 10); // 7500 gas units
@@ -119,6 +119,8 @@ uint256 value = map[msg.sender]
 ```
 - Test Results
 
+<div style="text-align: center;">
+
 Precompile
 
 ![Alt text](./custom.png "precompile")
@@ -126,6 +128,9 @@ Precompile
 Solidity Implementation
 
 ![Alt text](./default.png "default")
+
+</div>
+
 # Instruction guide for Precompile-EVM
 
 Precompile-EVM is a repository for registering precompiles to Subnet-EVM without forking the Subnet-EVM codebase. Subnet-EVM supports registering external precompiles through `precompile/modules` package. By importing Subnet-EVM as a library, you can register your own precompiles to Subnet-EVM and build it together with Subnet-EVM.
