@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
+	
 	"github.com/ava-labs/subnet-evm/accounts/abi"
 	"github.com/ava-labs/subnet-evm/precompile/contract"
 	"github.com/ava-labs/subnet-evm/vmerrs"
@@ -115,7 +115,7 @@ func GetHelper(stateDB contract.StateDB, storageKeyHash common.Hash) *big.Int{
 }
 func GetHelperString(stateDB contract.StateDB, storageKeyHash common.Hash) string{
 	value := stateDB.GetState(ContractAddress, storageKeyHash)
-	return string(value.Bytes[:])
+	return string(value.Bytes())
 }
 //@todo custom function end
 

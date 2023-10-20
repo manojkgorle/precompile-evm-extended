@@ -1,4 +1,103 @@
-# Precompile-EVM
+# enDe - Max precompile KYC Blockchain
+
+enDe is a blockchain network build using avalanche subnets & precompile evm.
+
+## Repos
+- [Precompile Evm](https://github.com/manojkgorle/precompile-evm-extended)(This)
+- [NodeJs Backend](https://github.com/manojkgorle/improved-couscous)
+- [NextJs frontend](https://github.com/aditya-git16/potential-fishstick)
+
+## Features
+- KYC 
+- Native support for **Eddsa25519** curve using precompile
+- Custom **Mapping** precompile
+
+## About, Why, Uses of KYC
+- For transacting on enDe chain, users need to complete their KYC. KYC is benefitial for removing the anonymity provided by BlockChains as Default.
+- We have experienced several rekts(Exploits) resulting in $Billions of loses, in Defi & NFT space from the starting.
+- The culprits are never identified(many times) because of their anonymity. So removing the anonymity, reduces rekts on Blockchains
+- KYC is useful for onboarding specific set of users, using governance by current users of Blockchain.
+
+## Precompiles
+
+### Eddsa25519:
+- Precompile Address: `0x03000000000000000010`
+- Eddsa25519 is one of the most vividly used curve in modern day cryptography for its security & speed.
+- Eddsa25519 curve is used for aggregated signatures submited by Zeroknowledge rollups
+- Interface of precompile Eddsa25519: 
+```solidity
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+interface IEddsa25519Verify {
+    function verifySignature(string memory publicKey,string memory message,string memory signature) external view returns (bool isValid);
+}
+
+./contracts/contracts/interfaces/IEddsa25519.sol
+```
+### Mapping:
+- Precompile Address: `0x03000000000000000009`
+- Mappings are most used solidity functions. But they are also too costly.
+- Interface of precompile Imapping:
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IMapping {
+  //@dev key gives you access to declare multiple instances of mapping
+  function addressToUint(string memory key, address _address, uint256 _uint) external;
+
+  function getAddressToUint(string memory key, address _address) external view returns (uint256 _uint);
+
+  function uintToString(string memory key, uint256 _uint, string memory _string) external;
+
+  function getUintToString(string memory key, uint _uint) external view returns (string memory _string);
+
+  function uintToUint(string memory key, uint256 _uint1, uint256 _uint2) external;
+
+  function getUintToUint(string memory key, uint256 _uint1) external view returns (uint256 _uint2);
+}
+
+./contracts/contracts/interfaces/IMapping.sol
+```
+
+- Usage
+```Solidity
+//Imapping Decleration
+IMapping public map = IMapping("0x03000000000000000009");
+
+//Solidity declaration
+mapping(address => uint256) public map;
+
+//Imapping usage
+//Value store:
+map.addressToUint("1",msg.sender, 43);
+
+//Value retrieve:
+uint256 value = map.getAddressToUint("1", msg.sender);
+
+//Solidity mapping usage
+//value store:
+map[msg.sender] = 56;
+
+//value retrieve
+uint256 value = map[msg.sender]
+```
+
+- Gas Savings
+```Soldity
+    function testCustom(address _owner) public{
+        map.mapAddUint("1", _owner, 10); // 7500 gas units
+    }
+
+    function testDefault(address _owner) public{
+        map[_owner] = 10; //22000 gas units
+    }
+
+    // Gas Saved: 22000 - 7500 = 16500 gas units
+```
+# Instruction guide for Precompile-EVM
 
 Precompile-EVM is a repository for registering precompiles to Subnet-EVM without forking the Subnet-EVM codebase. Subnet-EVM supports registering external precompiles through `precompile/modules` package. By importing Subnet-EVM as a library, you can register your own precompiles to Subnet-EVM and build it together with Subnet-EVM.
 

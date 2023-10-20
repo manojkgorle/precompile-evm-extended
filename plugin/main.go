@@ -16,6 +16,8 @@ import (
 	//_ "github.com/ava-labs/precompile-evm/{yourprecompilepkg}"
 	_ "github.com/ava-labs/precompile-evm/mapping"
 	_ "github.com/ava-labs/precompile-evm/eddsa25519verify"
+	_ "github.com/ava-labs/precompile-evm/eddsatest"
+	_ "github.com/ava-labs/precompile-evm/rand"
 )
 
 const Version = "v0.1.4"

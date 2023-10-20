@@ -1,0 +1,1 @@
+[{"inputs":[{"internalType":"uint32","name":"totNum","type":"uint32"}],"name":"generateRandomNumber","outputs":[{"internalType":"uint256[]","name":"genNum","type":"uint256[]"}],"stateMutability":"view","type":"function"}]

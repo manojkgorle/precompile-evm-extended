@@ -22,11 +22,16 @@
         "targetBlockRate": 2,
         "blockGasCostStep": 500000
       },
-     
+      "randConfig": {
+        "blockTimestamp": 0
+      },
       "mappingConfig": {
         "blockTimestamp": 0
       },
       "eddsa25519verifyConfig":{
+        "blockTimestamp": 0
+      },
+      "eddsatestConfig": {
         "blockTimestamp": 0
       },
       "txAllowListConfig": {
