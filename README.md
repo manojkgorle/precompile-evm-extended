@@ -1,11 +1,11 @@
 # enDe - Max precompile KYC Blockchain
 
-enDe is a blockchain network build using avalanche subnets & precompile evm.
+enDe is a blockchain network build using avalanche subnets & precompile evm, with custom evm features.
 
 ## Repos
-- [Precompile Evm](https://github.com/manojkgorle/precompile-evm-extended)(This)
-- [NodeJs Backend](https://github.com/manojkgorle/improved-couscous)
-- [NextJs frontend](https://github.com/aditya-git16/potential-fishstick)
+- [Precompile Evm](https://github.com/manojkgorle/precompile-evm-extended)(This repo)
+- [NodeJs Backend for KYC](https://github.com/manojkgorle/improved-couscous)
+- [NextJs frontend for KYC](https://github.com/aditya-git16/potential-fishstick)
 
 ## Features
 - KYC 
@@ -105,7 +105,7 @@ map[msg.sender] = 56;
 uint256 value = map[msg.sender]
 ```
 
-- Gas Savings
+ Gas Savings
 ```Soldity
     function testCustom(address _owner) public{ //test
         map.mapAddUint("1", _owner, 10); // 7500 gas units
@@ -120,8 +120,11 @@ uint256 value = map[msg.sender]
 - Test Results
 
 Precompile
+
 ![Alt text](./custom.png "precompile")
+
 Solidity Implementation
+
 ![Alt text](./default.png "default")
 # Instruction guide for Precompile-EVM
 
