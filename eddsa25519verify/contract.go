@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"math/big"
 	"crypto/ed25519"
+    "encoding/hex"
+
 	"github.com/ava-labs/subnet-evm/accounts/abi"
 	"github.com/ava-labs/subnet-evm/precompile/contract"
 	"github.com/ava-labs/subnet-evm/vmerrs"
@@ -23,7 +25,7 @@ const (
 	// You should set a gas cost for each function in your contract.
 	// Generally, you should not set gas costs very low as this may cause your network to be vulnerable to DoS attacks.
 	// There are some predefined gas costs in contract/utils.go that you can use.
-	VerifySignatureGasCost uint64 = 1 /* SET A GAS COST HERE */
+	VerifySignatureGasCost uint64 = 100 /* SET A GAS COST HERE */
 )
 
 // CUSTOM CODE STARTS HERE
@@ -49,9 +51,9 @@ var (
 )
 
 type VerifySignatureInput struct {
-	PublicKey []byte
+	PublicKey string
 	Message   string
-	Signature []byte
+	Signature string
 }
 
 // UnpackVerifySignatureInput attempts to unpack [input] as VerifySignatureInput
@@ -99,9 +101,10 @@ func verifySignature(accessibleState contract.AccessibleState, caller common.Add
 
 	// CUSTOM CODE STARTS HERE
 	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
-
+	publicKey, err := hex.DecodeString(inputStruct.PublicKey)
+	signature, err := hex.DecodeString(inputStruct.Signature)
 	var output bool // CUSTOM CODE FOR AN OUTPUT
-	output = ed25519.Verify(inputStruct.PublicKey, []byte(inputStruct.Message), inputStruct.Signature)
+	output = ed25519.Verify(publicKey,[]byte(inputStruct.Message), signature)
 	packedOutput, err := PackVerifySignatureOutput(output)
 	if err != nil {
 		return nil, remainingGas, err
