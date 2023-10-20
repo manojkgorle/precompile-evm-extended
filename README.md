@@ -107,11 +107,11 @@ uint256 value = map[msg.sender]
 
 - Gas Savings
 ```Soldity
-    function testCustom(address _owner) public{
+    function testCustom(address _owner) public{ //test
         map.mapAddUint("1", _owner, 10); // 7500 gas units
     }
 
-    function testDefault(address _owner) public{
+    function testDefault(address _owner) public{ //test2
         map[_owner] = 10; //22000 gas units
     }
 
@@ -120,7 +120,7 @@ uint256 value = map[msg.sender]
 - Test Results
 
 Precompile
-![Alt text](./precomp.png "precompile")
+![Alt text](./custom.png "precompile")
 Solidity Implementation
 ![Alt text](./default.png "default")
 # Instruction guide for Precompile-EVM
