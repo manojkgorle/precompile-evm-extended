@@ -29,45 +29,129 @@ var (
 // tests for specific cases.
 var (
 	tests = map[string]testutils.PrecompileTest{
-		"insufficient gas for getMapAddUint should fail": {
+		"readOnly addressToUint should fail": {
 			Caller: common.Address{1},
 			InputFn: func(t testing.TB) []byte {
 				// CUSTOM CODE STARTS HERE
 				// populate test input here
-				testInput := GetMapAddUintInput{}
-				input, err := PackGetMapAddUint(testInput)
+				testInput := AddressToUintInput{}
+				input, err := PackAddressToUint(testInput)
 				require.NoError(t, err)
 				return input
 			},
-			SuppliedGas: GetMapAddUintGasCost - 1,
-			ReadOnly:    false,
-			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
-		},
-		"readOnly mapAddUint should fail": {
-			Caller: common.Address{1},
-			InputFn: func(t testing.TB) []byte {
-				// CUSTOM CODE STARTS HERE
-				// populate test input here
-				testInput := MapAddUintInput{}
-				input, err := PackMapAddUint(testInput)
-				require.NoError(t, err)
-				return input
-			},
-			SuppliedGas: MapAddUintGasCost,
+			SuppliedGas: AddressToUintGasCost,
 			ReadOnly:    true,
 			ExpectedErr: vmerrs.ErrWriteProtection.Error(),
 		},
-		"insufficient gas for mapAddUint should fail": {
+		"insufficient gas for addressToUint should fail": {
 			Caller: common.Address{1},
 			InputFn: func(t testing.TB) []byte {
 				// CUSTOM CODE STARTS HERE
 				// populate test input here
-				testInput := MapAddUintInput{}
-				input, err := PackMapAddUint(testInput)
+				testInput := AddressToUintInput{}
+				input, err := PackAddressToUint(testInput)
 				require.NoError(t, err)
 				return input
 			},
-			SuppliedGas: MapAddUintGasCost - 1,
+			SuppliedGas: AddressToUintGasCost - 1,
+			ReadOnly:    false,
+			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
+		},
+		"insufficient gas for getAddressToUint should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := GetAddressToUintInput{}
+				input, err := PackGetAddressToUint(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: GetAddressToUintGasCost - 1,
+			ReadOnly:    false,
+			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
+		},
+		"insufficient gas for getUintToString should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := GetUintToStringInput{}
+				input, err := PackGetUintToString(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: GetUintToStringGasCost - 1,
+			ReadOnly:    false,
+			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
+		},
+		"insufficient gas for getUintToUint should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := GetUintToUintInput{}
+				input, err := PackGetUintToUint(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: GetUintToUintGasCost - 1,
+			ReadOnly:    false,
+			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
+		},
+		"readOnly uintToString should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := UintToStringInput{}
+				input, err := PackUintToString(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: UintToStringGasCost,
+			ReadOnly:    true,
+			ExpectedErr: vmerrs.ErrWriteProtection.Error(),
+		},
+		"insufficient gas for uintToString should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := UintToStringInput{}
+				input, err := PackUintToString(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: UintToStringGasCost - 1,
+			ReadOnly:    false,
+			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
+		},
+		"readOnly uintToUint should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := UintToUintInput{}
+				input, err := PackUintToUint(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: UintToUintGasCost,
+			ReadOnly:    true,
+			ExpectedErr: vmerrs.ErrWriteProtection.Error(),
+		},
+		"insufficient gas for uintToUint should fail": {
+			Caller: common.Address{1},
+			InputFn: func(t testing.TB) []byte {
+				// CUSTOM CODE STARTS HERE
+				// populate test input here
+				testInput := UintToUintInput{}
+				input, err := PackUintToUint(testInput)
+				require.NoError(t, err)
+				return input
+			},
+			SuppliedGas: UintToUintGasCost - 1,
 			ReadOnly:    false,
 			ExpectedErr: vmerrs.ErrOutOfGas.Error(),
 		},

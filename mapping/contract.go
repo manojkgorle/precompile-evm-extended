@@ -23,8 +23,12 @@ const (
 	// You should set a gas cost for each function in your contract.
 	// Generally, you should not set gas costs very low as this may cause your network to be vulnerable to DoS attacks.
 	// There are some predefined gas costs in contract/utils.go that you can use.
-	GetMapAddUintGasCost uint64 = 1 /* SET A GAS COST HERE */
-	MapAddUintGasCost    uint64 = 1 /* SET A GAS COST HERE */
+	AddressToUintGasCost    uint64 = 100 /* SET A GAS COST HERE */
+	GetAddressToUintGasCost uint64 = 1 /* SET A GAS COST HERE */
+	GetUintToStringGasCost  uint64 = 1 /* SET A GAS COST HERE */
+	GetUintToUintGasCost    uint64 = 1 /* SET A GAS COST HERE */
+	UintToStringGasCost     uint64 = 100 /* SET A GAS COST HERE */
+	UintToUintGasCost       uint64 = 100 /* SET A GAS COST HERE */
 )
 
 // CUSTOM CODE STARTS HERE
@@ -49,63 +53,137 @@ var (
 	MappingPrecompile = createMappingPrecompile()
 )
 
-type GetMapAddUintInput struct {
+type AddressToUintInput struct {
+	Key     string
+	Address common.Address
+	Uint    *big.Int
+}
+
+type GetAddressToUintInput struct {
 	Key     string
 	Address common.Address
 }
 
-type MapAddUintInput struct {
-	Key     string
-	Address common.Address
-	Balance *big.Int
+type GetUintToStringInput struct {
+	Key  string
+	Uint *big.Int
+}
+
+type GetUintToUintInput struct {
+	Key   string
+	Uint1 *big.Int
+}
+
+type UintToStringInput struct {
+	Key    string
+	Uint   *big.Int
+	String string
+}
+
+type UintToUintInput struct {
+	Key   string
+	Uint1 *big.Int
+	Uint2 *big.Int
 }
 
 //@todo custom functions start
-func getStorageKeyHash(key string, address common.Address) common.Hash{
-
-
+func getStorageKeyHashAddress(key string, address common.Address) common.Hash{
 	stringAddress := address.String()
 	stringConc := key + stringAddress
-
-	return common.BytesToHash([]byte(stringConc))
-	
+	return common.BytesToHash([]byte(stringConc))	
 }
+func getStorageKeyHashUint(key string, bigInt *big.Int) common.Hash{
+	stringUint := bigInt.String()
+	stringConc := key + stringUint
+	return common.BytesToHash([]byte(stringConc))	
+}
+
 // StoreMapValue sets the value of the storage key in the contract storage.
 func StoreMapValue(stateDB contract.StateDB, storageKeyHash common.Hash,value *big.Int) {
 	// Convert uint to Hash
 	valueHash := common.BigToHash(value)
 	stateDB.SetState(ContractAddress, storageKeyHash, valueHash)
 }
-func helperGetMapAddUint(stateDB contract.StateDB, storageKeyHash common.Hash) *big.Int{
+func StoreMapValueString(stateDB contract.StateDB, storageKeyHash common.Hash,value string) {
+	// Convert uint to Hash
+	valueHash := common.BytesToHash([]byte(value))
+	stateDB.SetState(ContractAddress, storageKeyHash, valueHash)
+}
+func GetHelper(stateDB contract.StateDB, storageKeyHash common.Hash) *big.Int{
 	value := stateDB.GetState(ContractAddress, storageKeyHash)
 	return value.Big()
 }
-//@todo custom functions end
+func GetHelperString(stateDB contract.StateDB, storageKeyHash common.Hash) string{
+	value := stateDB.GetState(ContractAddress, storageKeyHash)
+	return string(value.Bytes[:])
+}
+//@todo custom function end
 
-// UnpackGetMapAddUintInput attempts to unpack [input] as GetMapAddUintInput
+// UnpackAddressToUintInput attempts to unpack [input] as AddressToUintInput
 // assumes that [input] does not include selector (omits first 4 func signature bytes)
-func UnpackGetMapAddUintInput(input []byte) (GetMapAddUintInput, error) {
-	inputStruct := GetMapAddUintInput{}
-	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "getMapAddUint", input)
+func UnpackAddressToUintInput(input []byte) (AddressToUintInput, error) {
+	inputStruct := AddressToUintInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "addressToUint", input)
 
 	return inputStruct, err
 }
 
-// PackGetMapAddUint packs [inputStruct] of type GetMapAddUintInput into the appropriate arguments for getMapAddUint.
-func PackGetMapAddUint(inputStruct GetMapAddUintInput) ([]byte, error) {
-	return MappingABI.Pack("getMapAddUint", inputStruct.Key, inputStruct.Address)
+// PackAddressToUint packs [inputStruct] of type AddressToUintInput into the appropriate arguments for addressToUint.
+func PackAddressToUint(inputStruct AddressToUintInput) ([]byte, error) {
+	return MappingABI.Pack("addressToUint", inputStruct.Key, inputStruct.Address, inputStruct.Uint)
 }
 
-// PackGetMapAddUintOutput attempts to pack given balance of type *big.Int
+func addressToUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, AddressToUintGasCost); err != nil {
+		return nil, 0, err
+	}
+	if readOnly {
+		return nil, remainingGas, vmerrs.ErrWriteProtection
+	}
+	// attempts to unpack [input] into the arguments to the AddressToUintInput.
+	// Assumes that [input] does not include selector
+	// You can use unpacked [inputStruct] variable in your code
+	inputStruct, err := UnpackAddressToUintInput(input)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// CUSTOM CODE STARTS HERE
+	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
+	storageKeyHash := getStorageKeyHashAddress(inputStruct.Key, inputStruct.Address)
+	currentState := accessibleState.GetStateDB()
+	StoreMapValue(currentState,storageKeyHash,inputStruct.Uint)
+	// this function does not return an output, leave this one as is
+	packedOutput := []byte{}
+
+	// Return the packed output and the remaining gas
+	return packedOutput, remainingGas, nil
+}
+
+// UnpackGetAddressToUintInput attempts to unpack [input] as GetAddressToUintInput
+// assumes that [input] does not include selector (omits first 4 func signature bytes)
+func UnpackGetAddressToUintInput(input []byte) (GetAddressToUintInput, error) {
+	inputStruct := GetAddressToUintInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "getAddressToUint", input)
+
+	return inputStruct, err
+}
+
+// PackGetAddressToUint packs [inputStruct] of type GetAddressToUintInput into the appropriate arguments for getAddressToUint.
+func PackGetAddressToUint(inputStruct GetAddressToUintInput) ([]byte, error) {
+	return MappingABI.Pack("getAddressToUint", inputStruct.Key, inputStruct.Address)
+}
+
+// PackGetAddressToUintOutput attempts to pack given uint of type *big.Int
 // to conform the ABI outputs.
-func PackGetMapAddUintOutput(balance *big.Int) ([]byte, error) {
-	return MappingABI.PackOutput("getMapAddUint", balance)
+func PackGetAddressToUintOutput(uint *big.Int) ([]byte, error) {
+	return MappingABI.PackOutput("getAddressToUint", uint)
 }
 
-// UnpackGetMapAddUintOutput attempts to unpack given [output] into the *big.Int type output
+// UnpackGetAddressToUintOutput attempts to unpack given [output] into the *big.Int type output
 // assumes that [output] does not include selector (omits first 4 func signature bytes)
-func UnpackGetMapAddUintOutput(output []byte) (*big.Int, error) {
-	res, err := MappingABI.Unpack("getMapAddUint", output)
+func UnpackGetAddressToUintOutput(output []byte) (*big.Int, error) {
+	res, err := MappingABI.Unpack("getAddressToUint", output)
 	if err != nil {
 		return new(big.Int), err
 	}
@@ -113,14 +191,14 @@ func UnpackGetMapAddUintOutput(output []byte) (*big.Int, error) {
 	return unpacked, nil
 }
 
-func getMapAddUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
-	if remainingGas, err = contract.DeductGas(suppliedGas, GetMapAddUintGasCost); err != nil {
+func getAddressToUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, GetAddressToUintGasCost); err != nil {
 		return nil, 0, err
 	}
-	// attempts to unpack [input] into the arguments to the GetMapAddUintInput.
+	// attempts to unpack [input] into the arguments to the GetAddressToUintInput.
 	// Assumes that [input] does not include selector
 	// You can use unpacked [inputStruct] variable in your code
-	inputStruct, err := UnpackGetMapAddUintInput(input)
+	inputStruct, err := UnpackGetAddressToUintInput(input)
 	if err != nil {
 		return nil, remainingGas, err
 	}
@@ -128,12 +206,13 @@ func getMapAddUint(accessibleState contract.AccessibleState, caller common.Addre
 	// CUSTOM CODE STARTS HERE
 	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
 
-	storageKeyHash := getStorageKeyHash(inputStruct.Key, inputStruct.Address)
 	// var output *big.Int // CUSTOM CODE FOR AN OUTPUT
-	currentState := accessibleState.GetStateDB()
-	output := helperGetMapAddUint(currentState, storageKeyHash)
+	storageKeyHash := getStorageKeyHashAddress(inputStruct.Key, inputStruct.Address)
 
-	packedOutput, err := PackGetMapAddUintOutput(output)
+	currentState := accessibleState.GetStateDB()
+	output := GetHelper(currentState, storageKeyHash)
+
+	packedOutput, err := PackGetAddressToUintOutput(output)
 	if err != nil {
 		return nil, remainingGas, err
 	}
@@ -142,40 +221,200 @@ func getMapAddUint(accessibleState contract.AccessibleState, caller common.Addre
 	return packedOutput, remainingGas, nil
 }
 
-// UnpackMapAddUintInput attempts to unpack [input] as MapAddUintInput
+// UnpackGetUintToStringInput attempts to unpack [input] as GetUintToStringInput
 // assumes that [input] does not include selector (omits first 4 func signature bytes)
-func UnpackMapAddUintInput(input []byte) (MapAddUintInput, error) {
-	inputStruct := MapAddUintInput{}
-	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "mapAddUint", input)
+func UnpackGetUintToStringInput(input []byte) (GetUintToStringInput, error) {
+	inputStruct := GetUintToStringInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "getUintToString", input)
 
 	return inputStruct, err
 }
 
-// PackMapAddUint packs [inputStruct] of type MapAddUintInput into the appropriate arguments for mapAddUint.
-func PackMapAddUint(inputStruct MapAddUintInput) ([]byte, error) {
-	return MappingABI.Pack("mapAddUint", inputStruct.Key, inputStruct.Address, inputStruct.Balance)
+// PackGetUintToString packs [inputStruct] of type GetUintToStringInput into the appropriate arguments for getUintToString.
+func PackGetUintToString(inputStruct GetUintToStringInput) ([]byte, error) {
+	return MappingABI.Pack("getUintToString", inputStruct.Key, inputStruct.Uint)
 }
 
-func mapAddUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
-	if remainingGas, err = contract.DeductGas(suppliedGas, MapAddUintGasCost); err != nil {
+// PackGetUintToStringOutput attempts to pack given string of type string
+// to conform the ABI outputs.
+func PackGetUintToStringOutput(string string) ([]byte, error) {
+	return MappingABI.PackOutput("getUintToString", string)
+}
+
+// UnpackGetUintToStringOutput attempts to unpack given [output] into the string type output
+// assumes that [output] does not include selector (omits first 4 func signature bytes)
+func UnpackGetUintToStringOutput(output []byte) (string, error) {
+	res, err := MappingABI.Unpack("getUintToString", output)
+	if err != nil {
+		return "", err
+	}
+	unpacked := *abi.ConvertType(res[0], new(string)).(*string)
+	return unpacked, nil
+}
+
+func getUintToString(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, GetUintToStringGasCost); err != nil {
 		return nil, 0, err
 	}
-	if readOnly {
-		return nil, remainingGas, vmerrs.ErrWriteProtection
-	}
-	// attempts to unpack [input] into the arguments to the MapAddUintInput.
+	// attempts to unpack [input] into the arguments to the GetUintToStringInput.
 	// Assumes that [input] does not include selector
 	// You can use unpacked [inputStruct] variable in your code
-	inputStruct, err := UnpackMapAddUintInput(input)
+	inputStruct, err := UnpackGetUintToStringInput(input)
 	if err != nil {
 		return nil, remainingGas, err
 	}
 
 	// CUSTOM CODE STARTS HERE
 	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
-	storageKeyHash := getStorageKeyHash(inputStruct.Key, inputStruct.Address)
+	storageKeyHash := getStorageKeyHashUint(inputStruct.Key, inputStruct.Uint)
+	// var output string // CUSTOM CODE FOR AN OUTPUT
 	currentState := accessibleState.GetStateDB()
-	StoreMapValue(currentState,storageKeyHash,inputStruct.Balance)
+	output := GetHelperString(currentState, storageKeyHash)
+	packedOutput, err := PackGetUintToStringOutput(output)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// Return the packed output and the remaining gas
+	return packedOutput, remainingGas, nil
+}
+
+// UnpackGetUintToUintInput attempts to unpack [input] as GetUintToUintInput
+// assumes that [input] does not include selector (omits first 4 func signature bytes)
+func UnpackGetUintToUintInput(input []byte) (GetUintToUintInput, error) {
+	inputStruct := GetUintToUintInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "getUintToUint", input)
+
+	return inputStruct, err
+}
+
+// PackGetUintToUint packs [inputStruct] of type GetUintToUintInput into the appropriate arguments for getUintToUint.
+func PackGetUintToUint(inputStruct GetUintToUintInput) ([]byte, error) {
+	return MappingABI.Pack("getUintToUint", inputStruct.Key, inputStruct.Uint1)
+}
+
+// PackGetUintToUintOutput attempts to pack given uint2 of type *big.Int
+// to conform the ABI outputs.
+func PackGetUintToUintOutput(uint2 *big.Int) ([]byte, error) {
+	return MappingABI.PackOutput("getUintToUint", uint2)
+}
+
+// UnpackGetUintToUintOutput attempts to unpack given [output] into the *big.Int type output
+// assumes that [output] does not include selector (omits first 4 func signature bytes)
+func UnpackGetUintToUintOutput(output []byte) (*big.Int, error) {
+	res, err := MappingABI.Unpack("getUintToUint", output)
+	if err != nil {
+		return new(big.Int), err
+	}
+	unpacked := *abi.ConvertType(res[0], new(*big.Int)).(**big.Int)
+	return unpacked, nil
+}
+
+func getUintToUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, GetUintToUintGasCost); err != nil {
+		return nil, 0, err
+	}
+	// attempts to unpack [input] into the arguments to the GetUintToUintInput.
+	// Assumes that [input] does not include selector
+	// You can use unpacked [inputStruct] variable in your code
+	inputStruct, err := UnpackGetUintToUintInput(input)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// CUSTOM CODE STARTS HERE
+	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
+	
+	storageKeyHash := getStorageKeyHashUint(inputStruct.Key, inputStruct.Uint1)
+	// var output *big.Int // CUSTOM CODE FOR AN OUTPUT
+	currentState := accessibleState.GetStateDB()
+	output := GetHelper(currentState, storageKeyHash)
+
+	packedOutput, err := PackGetUintToUintOutput(output)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// Return the packed output and the remaining gas
+	return packedOutput, remainingGas, nil
+}
+
+// UnpackUintToStringInput attempts to unpack [input] as UintToStringInput
+// assumes that [input] does not include selector (omits first 4 func signature bytes)
+func UnpackUintToStringInput(input []byte) (UintToStringInput, error) {
+	inputStruct := UintToStringInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "uintToString", input)
+
+	return inputStruct, err
+}
+
+// PackUintToString packs [inputStruct] of type UintToStringInput into the appropriate arguments for uintToString.
+func PackUintToString(inputStruct UintToStringInput) ([]byte, error) {
+	return MappingABI.Pack("uintToString", inputStruct.Key, inputStruct.Uint, inputStruct.String)
+}
+
+func uintToString(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, UintToStringGasCost); err != nil {
+		return nil, 0, err
+	}
+	if readOnly {
+		return nil, remainingGas, vmerrs.ErrWriteProtection
+	}
+	// attempts to unpack [input] into the arguments to the UintToStringInput.
+	// Assumes that [input] does not include selector
+	// You can use unpacked [inputStruct] variable in your code
+	inputStruct, err := UnpackUintToStringInput(input)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// CUSTOM CODE STARTS HERE
+	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
+	storageKeyHash := getStorageKeyHashUint(inputStruct.Key, inputStruct.Uint)
+	currentState := accessibleState.GetStateDB()
+	StoreMapValueString(currentState,storageKeyHash,inputStruct.String)
+	// this function does not return an output, leave this one as is
+	packedOutput := []byte{}
+
+	// Return the packed output and the remaining gas
+	return packedOutput, remainingGas, nil
+}
+
+// UnpackUintToUintInput attempts to unpack [input] as UintToUintInput
+// assumes that [input] does not include selector (omits first 4 func signature bytes)
+func UnpackUintToUintInput(input []byte) (UintToUintInput, error) {
+	inputStruct := UintToUintInput{}
+	err := MappingABI.UnpackInputIntoInterface(&inputStruct, "uintToUint", input)
+
+	return inputStruct, err
+}
+
+// PackUintToUint packs [inputStruct] of type UintToUintInput into the appropriate arguments for uintToUint.
+func PackUintToUint(inputStruct UintToUintInput) ([]byte, error) {
+	return MappingABI.Pack("uintToUint", inputStruct.Key, inputStruct.Uint1, inputStruct.Uint2)
+}
+
+func uintToUint(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
+	if remainingGas, err = contract.DeductGas(suppliedGas, UintToUintGasCost); err != nil {
+		return nil, 0, err
+	}
+	if readOnly {
+		return nil, remainingGas, vmerrs.ErrWriteProtection
+	}
+	// attempts to unpack [input] into the arguments to the UintToUintInput.
+	// Assumes that [input] does not include selector
+	// You can use unpacked [inputStruct] variable in your code
+	inputStruct, err := UnpackUintToUintInput(input)
+	if err != nil {
+		return nil, remainingGas, err
+	}
+
+	// CUSTOM CODE STARTS HERE
+	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
+	storageKeyHash := getStorageKeyHashUint(inputStruct.Key, inputStruct.Uint1)
+	currentState := accessibleState.GetStateDB()
+	StoreMapValue(currentState,storageKeyHash,inputStruct.Uint2)
+
 	// this function does not return an output, leave this one as is
 	packedOutput := []byte{}
 
@@ -189,8 +428,12 @@ func createMappingPrecompile() contract.StatefulPrecompiledContract {
 	var functions []*contract.StatefulPrecompileFunction
 
 	abiFunctionMap := map[string]contract.RunStatefulPrecompileFunc{
-		"getMapAddUint": getMapAddUint,
-		"mapAddUint":    mapAddUint,
+		"addressToUint":    addressToUint,
+		"getAddressToUint": getAddressToUint,
+		"getUintToString":  getUintToString,
+		"getUintToUint":    getUintToUint,
+		"uintToString":     uintToString,
+		"uintToUint":       uintToUint,
 	}
 
 	for name, function := range abiFunctionMap {

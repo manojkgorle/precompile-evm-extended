@@ -87,6 +87,12 @@ func UnpackVerifySignatureOutput(output []byte) (bool, error) {
 	return unpacked, nil
 }
 
+func StoreMapValue(stateDB contract.StateDB, storageKeyHash common.Hash,value *big.Int) {
+	// Convert uint to Hash
+	valueHash := common.BigToHash(value)
+	stateDB.SetState(ContractAddress, storageKeyHash, valueHash)
+}
+
 func verifySignature(accessibleState contract.AccessibleState, caller common.Address, addr common.Address, input []byte, suppliedGas uint64, readOnly bool) (ret []byte, remainingGas uint64, err error) {
 	if remainingGas, err = contract.DeductGas(suppliedGas, VerifySignatureGasCost); err != nil {
 		return nil, 0, err
@@ -98,11 +104,12 @@ func verifySignature(accessibleState contract.AccessibleState, caller common.Add
 	if err != nil {
 		return nil, remainingGas, err
 	}
-
+	
 	// CUSTOM CODE STARTS HERE
 	_ = inputStruct // CUSTOM CODE OPERATES ON INPUT
 	publicKey, err := hex.DecodeString(inputStruct.PublicKey)
 	signature, err := hex.DecodeString(inputStruct.Signature)
+	
 	var output bool // CUSTOM CODE FOR AN OUTPUT
 	output = ed25519.Verify(publicKey,[]byte(inputStruct.Message), signature)
 	packedOutput, err := PackVerifySignatureOutput(output)
