@@ -10,6 +10,7 @@ enDe is a blockchain network build using avalanche subnets & precompile evm.
 ## Features
 - KYC 
 - Native support for **Eddsa25519** curve using precompile
+- Native **RandUint256** generator
 - Custom **Mapping** precompile
 
 ## About, Why, Uses of KYC
@@ -36,6 +37,25 @@ interface IEddsa25519Verify {
 
 ./contracts/contracts/interfaces/IEddsa25519.sol
 ```
+
+### RandUint256
+- Precompile Address: `0x03000000000000000020`
+- We rely on chainlink VRF for generating random numbers.
+- So, why cant we have our own random number generator as a precompile
+- Interface of precompile Rand
+```Solidity
+//SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+interface IRand {
+  function generateRandomNumber(uint32 totNum) external view returns (uint256[] memory genNum);
+}
+
+./contracts/contracts/interfaces/IRand.sol
+```
+- function usage is same as chainlink vrf, but functioning is quite different. We get randInt instantly insted of waiting for n number of blocks
+
 ### Mapping:
 - Precompile Address: `0x03000000000000000009`
 - Mappings are most used solidity functions. But they are also too costly.
@@ -97,6 +117,12 @@ uint256 value = map[msg.sender]
 
     // Gas Saved: 22000 - 7500 = 16500 gas units
 ```
+- Test Results
+
+Precompile
+![Alt text](./precomp.png "precompile")
+Solidity Implementation
+![Alt text](./default.png "default")
 # Instruction guide for Precompile-EVM
 
 Precompile-EVM is a repository for registering precompiles to Subnet-EVM without forking the Subnet-EVM codebase. Subnet-EVM supports registering external precompiles through `precompile/modules` package. By importing Subnet-EVM as a library, you can register your own precompiles to Subnet-EVM and build it together with Subnet-EVM.
