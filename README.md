@@ -22,7 +22,7 @@ enDe is a blockchain network build using avalanche subnets & precompile evm, wit
 ## Precompiles
 
 ### Eddsa25519:
-- Precompile Address: `0x03000000000000000010`
+- Precompile Address: `0x03000000000000000008`
 - Eddsa25519 is one of the most vividly used curve in modern day cryptography for its security & speed.
 - Eddsa25519 curve is used for aggregated signatures submited by Zeroknowledge rollups
 - Interface of precompile Eddsa25519: 
@@ -120,7 +120,6 @@ uint256 value = map[msg.sender]
 - Test Results
 
 <div style="text-align: center;">
-
 Precompile
 
 ![Alt text](./custom.png "precompile")
@@ -128,8 +127,13 @@ Precompile
 Solidity Implementation
 
 ![Alt text](./default.png "default")
-
 </div>
+
+# Ideas for customisation
+
+- Increased signatue schemas. As there are many signature schemas available, introducing them will be a better idea. Given the conditions for extensive authentication support for the DAPPs. Leaving ecdsa as the curve for txSubmitting.
+
+- While studying gnark library for zk implementation as a precompile. We came accross, pk,vk, witness implementations in gnark. Our idea is to give native support to gnark library as it is one of the most extensively used library.
 
 # Instruction guide for Precompile-EVM
 
